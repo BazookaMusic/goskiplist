@@ -2,18 +2,18 @@ package main
 
 import (
 	"math/rand"
-	"time"
 )
 
 const Mask = ((1 << SKIPLIST_MAX_LEVEL) - 1)
 const FAST_IMPLEMENTATION = true
 
 func coin_tosses(prob float64, max_levels int, fast bool) (counter int) {
-	t1 := time.Now()
 
 	counter = 1
 	// very fast with probability 0.5
 	// only one call to rand
+	// find first zero in random float bit representation
+	// geometric distribution
 	if fast {
 
 		res_mask := rand.Uint64() & Mask
@@ -33,8 +33,6 @@ func coin_tosses(prob float64, max_levels int, fast bool) (counter int) {
 		}
 
 	}
-
-	randtime += time.Now().Sub(t1)
 	return counter
 
 }
