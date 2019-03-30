@@ -21,11 +21,23 @@ func (head *skiplist) Len() int {
 	return head.n_elements
 }
 
-func (initial *skiplist) Init_skiplist(prob float64, max_levels int) {
+func (initial *skiplist) Init_skiplist(prob float64, max_levels int, fast_random bool) {
 	/* Initialise skiplist */
+
+	if prob < 0 {
+		prob = 0.5
+		fmt.Println("Init: Probability given less than zero, set to 0.5 instead")
+	}
+
+	if max_levels > SKIPLIST_MAX_LEVEL {
+		fmt.Println("Init: Max level given more than supported amount of",
+			SKIPLIST_MAX_LEVEL, " setting to ", SKIPLIST_MAX_LEVEL, "instead")
+	}
+
 	initial.n_levels = 1
 	initial.prob = prob
 	initial.max_levels = max_levels
+	initial.fast_random = fast_random
 
 	var head *skiplist_node = new(skiplist_node)
 	head.fully_linked = true
@@ -36,36 +48,15 @@ func (initial *skiplist) Init_skiplist(prob float64, max_levels int) {
 	initial.head = head
 }
 
-func debug(a skiplist) {
-	level := a.n_levels - 1
-	finger := a.head
-
-	for ; level >= 0; level-- {
-		counter := 0
-		if finger.next[level] == nil {
-			fmt.Print(nil)
-		}
-		for node := finger.next[level]; node != nil; node = node.next[level] {
-			counter++
-			fmt.Print(" ", node.value)
-		}
-		fmt.Println(" nil", counter)
-	}
-}
-
 func (list *skiplist) ToSortedArray() []interface{} {
 	/* make a sorted array out of the skiplist
 	   returns the lowest level               */
 	arr := make([]interface{}, list.n_elements, list.n_elements)
-	//fmt.Println(list.n_elements)
 	counter := 0
 	for current_node := list.head.next[0]; current_node != nil; current_node = current_node.next[0] {
 		arr[counter] = current_node.value
-		//fmt.Print(arr[counter], current_node.value, " ")
 		counter++
 	}
-
-	//fmt.Println(arr)
 
 	return arr
 
@@ -143,9 +134,11 @@ func (head *skiplist) Contains(val interface{}) bool {
 }
 
 func (head *skiplist) Insert(v interface{}) bool {
+	// insert element
 
 	// highest level of insertion
-	top_level := coin_tosses(head.prob, head.max_levels)
+	// the head.fast property should not be modified after init
+	top_level := coin_tosses(head.prob, head.max_levels, head.fast_random)
 
 	// check if list must become taller
 	head.lock.Lock()
@@ -215,7 +208,6 @@ func (head *skiplist) Insert(v interface{}) bool {
 			// unlock to try again
 			prevPred = nil
 			for i := highest_locked; i >= 0; i-- {
-				//fmt.Println("Unlocking", i, prev[i].value)
 				if prevPred != prev[i] {
 					prev[i].mux.Unlock()
 				}
@@ -271,7 +263,6 @@ func (head *skiplist) Remove(val interface{}) bool {
 	for {
 		// try to find node
 		found_level := head.Find(val, prev[:], next[:])
-		//fmt.Println("level", found_level)
 
 		// if not found or already marked for deletion
 		// return false
@@ -323,7 +314,6 @@ func (head *skiplist) Remove(val interface{}) bool {
 				// unlock to try again
 				prevPred = nil
 				for i := highest_locked; i >= 0; i-- {
-					//fmt.Println("Unlocking", i, prev[i].value)
 					if prevPred != prev[i] {
 						prev[i].mux.Unlock()
 					}
@@ -342,7 +332,6 @@ func (head *skiplist) Remove(val interface{}) bool {
 			// cleanup and unlock
 			prevPred = nil
 			for i := highest_locked; i >= 0; i-- {
-				//fmt.Println("Unlocking", i, prev[i].value)
 				if prevPred != prev[i] {
 					prev[i].mux.Unlock()
 				}
@@ -362,7 +351,6 @@ func (head *skiplist) Remove(val interface{}) bool {
 }
 
 func CanDelete(candidate *skiplist_node, found_level int) bool {
-	//fmt.Println("aaa", candidate.fully_linked, candidate.top_level, found_level, candidate.marked)
 	return candidate.fully_linked && candidate.top_level == found_level && !candidate.marked
 }
 

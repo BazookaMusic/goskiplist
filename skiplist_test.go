@@ -10,6 +10,7 @@ import (
 
 const AMOUNT = 1000000 // amount of elements to insert
 const N_ROUTINES = 100 // routines to start for concurrent tests
+const FAST = true      // fast random generator
 
 // helpers
 func eval_sort(arr []interface{}) bool {
@@ -59,7 +60,7 @@ func TestInsert(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 30, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -101,7 +102,7 @@ func TestRemove(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 20, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -152,7 +153,7 @@ func TestRandOperation(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 20, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -206,7 +207,7 @@ func TestConcurrentInsertAndOrder(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 20, FAST)
 
 	var wg sync.WaitGroup
 
@@ -253,7 +254,7 @@ func TestConcurrentInsertRemove(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 20, FAST)
 
 	var wg sync.WaitGroup
 
@@ -303,7 +304,7 @@ func TestConcurrentMixed(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var head *skiplist = new(skiplist)
-	head.Init_skiplist(0.5, 20)
+	head.Init_skiplist(0.5, 20, FAST)
 
 	var wg sync.WaitGroup
 

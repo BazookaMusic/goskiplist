@@ -14,12 +14,13 @@ type skiplist_node struct {
 }
 
 type skiplist struct {
-	n_levels   int
-	head       *skiplist_node
-	n_elements int
-	prob       float64
-	max_levels int
-	lock       sync.Mutex
+	n_levels    int
+	head        *skiplist_node
+	n_elements  int
+	prob        float64
+	max_levels  int
+	lock        sync.Mutex
+	fast_random bool
 }
 
 type NotFoundErr string
