@@ -5,9 +5,8 @@ import "sync"
 const SKIPLIST_MAX_LEVEL = 30
 
 type skiplist_node struct {
-	value        int
+	value        interface{}
 	next         [SKIPLIST_MAX_LEVEL]*skiplist_node
-	prev         [SKIPLIST_MAX_LEVEL]*skiplist_node
 	marked       bool
 	fully_linked bool
 	mux          sync.Mutex
