@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const AMOUNT = 1000000 // amount of elements to insert
+const AMOUNT = 10000   // amount of elements to insert
 const N_ROUTINES = 100 // routines to start for concurrent tests
 const FAST = true      // fast random generator
 
