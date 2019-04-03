@@ -62,6 +62,41 @@ func (list *skiplist) ToSortedArray() []interface{} {
 
 }
 
+func (head *skiplist) FindNextLowest(val interface{}) (node *skiplist_node) {
+	/* Find where the element should be
+	and return it's successor on the first level.
+	Returns the element or
+	-1 when not found */
+
+	// could be modified by inserts
+	head.lock.Lock()
+	level := head.n_levels - 1
+	head.lock.Unlock()
+	// much faster than starting at max
+
+	pred := head.head
+
+	var curr *skiplist_node
+
+	// traverse vertically
+	for ; level >= 0; level-- {
+		// horizontally
+		curr = pred.next[level]
+		for curr != nil && Less(curr.value, val) {
+			pred = curr
+			curr = pred.next[level]
+		}
+
+		// next of where it should be
+		if curr != nil && Equals(curr.value, val) {
+			break
+		}
+
+	}
+
+	return curr
+}
+
 func (head *skiplist) Find(val interface{}, prev, next []*skiplist_node) (found_level int) {
 	/* Find where the element should be
 	and return the first level where it was found and
@@ -354,5 +389,243 @@ func CanDelete(candidate *skiplist_node, found_level int) bool {
 	return candidate.fully_linked && candidate.top_level == found_level && !candidate.marked
 }
 
+func Union(skipa *skiplist, skipb *skiplist, inherit_first bool) (merged *skiplist) {
+	/* merge two skiplist sets into a new skiplist, keeping the previous two intact.
+	If inherit_first is true, use probability and fast_random of skipa else skipb.
+	O(N),Not threadsafe */
+
+	// new skiplist
+	merged = new(skiplist)
+
+	// max of two levels
+	if skipa.n_levels > skipb.n_levels {
+		merged.n_levels = skipa.n_levels
+	} else {
+		merged.n_levels = skipb.n_levels
+	}
+
+	// add head node
+	merged.head = new(skiplist_node)
+	merged.head.fully_linked = true
+
+	// inherit random generation attributes
+	// from proper list
+	if inherit_first {
+		merged.fast_random = skipa.fast_random
+		merged.prob = skipa.prob
+	} else {
+		merged.fast_random = skipb.fast_random
+		merged.prob = skipb.prob
+	}
+
+	// reset elements
+	merged.n_elements = 0
+
+	var aptr, bptr, new_node *skiplist_node
+	var prev_elem *interface{} = nil
+
+	// keep last node added in each level
+	var prevs [SKIPLIST_MAX_LEVEL]*skiplist_node
+
+	// add head nodes
+	for level := merged.n_levels - 1; level >= 0; level-- {
+		prevs[level] = merged.head
+	}
+
+	// skip head nodes in both origins
+	if skipa.head != nil {
+		aptr = skipa.head.next[0]
+	}
+	if skipb.head != nil {
+		bptr = skipb.head.next[0]
+	}
+
+	/* last level contains all elements sorted
+	go through them and add them up to their max level
+	while merging */
+
+	var element_to_add *skiplist_node
+	/* merge */
+	for !(aptr == nil && bptr == nil) {
+
+		/* skip same consecutive elements */
+		if prev_elem != nil {
+			if aptr != nil && Equals(aptr.value, *prev_elem) {
+				aptr = aptr.next[0]
+				continue
+			} else if bptr != nil && Equals(bptr.value, *prev_elem) {
+				bptr = bptr.next[0]
+				continue
+			}
+		}
+
+		// create new node
+		new_node = new(skiplist_node)
+		new_node.fully_linked = true
+
+		element_to_add = nil
+
+		/* choose if element from first or second list will be added first */
+		if (aptr != nil && bptr != nil && Less(aptr.value, bptr.value)) || bptr == nil {
+			// keep prev for same check
+			prev_elem = &aptr.value
+			element_to_add = aptr
+			// move first list pointer forward
+			aptr = aptr.next[0]
+		} else {
+			// keep prev for same check
+			prev_elem = &bptr.value
+			element_to_add = bptr
+			// move second list pointer forward
+			bptr = bptr.next[0]
+		}
+
+		if element_to_add != nil {
+
+			new_node.value = element_to_add.value
+			new_node.top_level = element_to_add.top_level
+
+			for level := element_to_add.top_level; level >= 0; level-- {
+				prevs[level].next[level] = new_node
+				prevs[level] = prevs[level].next[level]
+			}
+
+			merged.n_elements++
+
+		}
+
+	}
+
+	return merged
+
+}
+
+func Intersection(skipa *skiplist, skipb *skiplist, inherit_first bool) (intersected *skiplist) {
+	/* merge two skiplist sets into a new skiplist, keeping the previous two intact.
+	If inherit_first is true, use probability and fast_random of skipa else skipb.
+	O(N),Not threadsafe */
+
+	max_level := 0
+
+	// new skiplist
+	intersected = new(skiplist)
+
+	// max of two levels
+	if skipa.n_levels > skipb.n_levels {
+		intersected.n_levels = skipa.n_levels
+	} else {
+		intersected.n_levels = skipb.n_levels
+	}
+
+	// add head node
+	intersected.head = new(skiplist_node)
+	intersected.head.fully_linked = true
+
+	// inherit random generation attributes
+	// from proper list
+	if inherit_first {
+		intersected.fast_random = skipa.fast_random
+		intersected.prob = skipa.prob
+	} else {
+		intersected.fast_random = skipb.fast_random
+		intersected.prob = skipb.prob
+	}
+
+	// reset elements
+	intersected.n_elements = 0
+
+	var aptr, bptr, new_node *skiplist_node
+	var prev_elem *interface{} = nil
+
+	// keep last node added in each level
+	var prevs [SKIPLIST_MAX_LEVEL]*skiplist_node
+
+	// add head nodes
+	for level := intersected.n_levels - 1; level >= 0; level-- {
+		prevs[level] = intersected.head
+	}
+
+	// skip head nodes in both origins
+	if skipa.head != nil {
+		aptr = skipa.head.next[0]
+	}
+	if skipb.head != nil {
+		bptr = skipb.head.next[0]
+	}
+
+	/* last level contains all elements sorted
+	go through them and add them up to their max level
+	while merging */
+
+	/* merge */
+	for aptr != nil && bptr != nil {
+
+		/* skip same consecutive elements */
+		if prev_elem != nil {
+			if aptr != nil && Equals(aptr.value, *prev_elem) {
+				aptr = aptr.next[0]
+				continue
+			} else if bptr != nil && Equals(bptr.value, *prev_elem) {
+				bptr = bptr.next[0]
+				continue
+			}
+		}
+
+		/* element in both sets, add */
+		if aptr != nil && bptr != nil && Equals(aptr.value, bptr.value) {
+			// keep prev for same check
+			prev_elem = &aptr.value
+
+			new_node = new(skiplist_node)
+			new_node.fully_linked = true
+
+			new_node.value = aptr.value
+
+			// merge by level
+			// only levels which have the element in both lists
+			// will have the element in the new list
+			if aptr.top_level > bptr.top_level {
+				new_node.top_level = bptr.top_level
+			} else {
+				new_node.top_level = aptr.top_level
+			}
+
+			if new_node.top_level > max_level {
+				max_level = new_node.top_level
+			}
+
+			for level := new_node.top_level; level >= 0; level-- {
+				prevs[level].next[level] = new_node
+
+				prevs[level] = prevs[level].next[level]
+			}
+
+			intersected.n_elements++
+
+			// move first list pointer forward
+			aptr = aptr.next[0]
+			bptr = bptr.next[0]
+		} else if Less(aptr.value, bptr.value) {
+			// keep prev for same check
+			prev_elem = &aptr.value
+			// move second list pointer forward
+
+			aptr = skipa.FindNextLowest(bptr.value)
+
+		} else {
+			// keep prev for same check
+			prev_elem = &bptr.value
+			// move second list pointer forward
+
+			bptr = skipb.FindNextLowest(aptr.value)
+		}
+
+	}
+	intersected.n_levels = max_level + 1
+	return intersected
+
+}
+
 func main() {
+
 }
