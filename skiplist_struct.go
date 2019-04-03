@@ -2,29 +2,26 @@ package main
 
 import "sync"
 
-const SKIPLIST_MAX_LEVEL = 30
+// SkiplistMaxLevel maximum levels allocated for each Skiplist
+// next pointer arrays are of constant size
+const SkiplistMaxLevel = 30
 
-type skiplist_node struct {
-	value        interface{}
-	next         [SKIPLIST_MAX_LEVEL]*skiplist_node
-	marked       bool
-	fully_linked bool
-	mux          sync.Mutex
-	top_level    int
+type skiplistNode struct {
+	value       interface{}
+	next        [SkiplistMaxLevel]*skiplistNode
+	marked      bool
+	fullyLinked bool
+	mux         sync.Mutex
+	topLevel    int
 }
 
-type skiplist struct {
-	n_levels    int
-	head        *skiplist_node
-	n_elements  int
-	prob        float64
-	max_levels  int
-	lock        sync.Mutex
-	fast_random bool
-}
-
-type NotFoundErr string
-
-func (err NotFoundErr) Error() string {
-	return "Element not found"
+/*Skiplist : The Skiplist structure, must be initialised before use. */
+type Skiplist struct {
+	nLevels    int
+	head       *skiplistNode
+	nElements  int
+	prob       float64
+	maxLevels  int
+	lock       sync.Mutex
+	fastRandom bool
 }

@@ -2,9 +2,9 @@ package main
 
 import "fmt"
 
-// just prints the skiplist
-func skiplist_debug(a *skiplist) {
-	level := a.n_levels - 1
+// just prints the Skiplist
+func skiplistDebug(a *Skiplist) {
+	level := a.nLevels - 1
 	finger := a.head
 
 	for ; level >= 0; level-- {
