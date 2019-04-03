@@ -4,10 +4,13 @@ import (
 	"math/rand"
 )
 
-const Mask = ((1 << SKIPLIST_MAX_LEVEL) - 1)
-const FAST_IMPLEMENTATION = true
+const mask = ((1 << SkiplistMaxLevel) - 1)
 
-func coin_tosses(prob float64, max_levels int, fast bool) (counter int) {
+// FastImplementation = true, one call to rand, 0.5 probability
+// FastImplementation = false, consecutive calls to rand, variable probability
+const FastImplementation = true
+
+func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
 
 	counter = 1
 	// very fast with probability 0.5
@@ -16,10 +19,10 @@ func coin_tosses(prob float64, max_levels int, fast bool) (counter int) {
 	// geometric distribution
 	if fast {
 
-		res_mask := rand.Uint64() & Mask
+		resMask := rand.Uint64() & mask
 
 		// find first zero in float representation
-		for ; res_mask&1 == 0; res_mask >>= 1 {
+		for ; resMask&1 == 0; resMask >>= 1 {
 			counter++
 		}
 
