@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-const dataAmount = 100                                // dataAmount of elements to insert
+const dataAmount = 1000                               // dataAmount of elements to insert
 const nRoutinesAmount = 100                           // routines to start for concurrent tests
-var nRoutinesToUse = Min(dataAmount, nRoutinesAmount) // no reason to spawn more routines than inputs
+var nRoutinesToUse = min(dataAmount, nRoutinesAmount) // no reason to spawn more routines than inputs
 
-var evenDataAmount = TurnEven(dataAmount) // used for tests
+var evenDataAmount = turnEven(dataAmount) // used for tests
 
 const FAST = true // fast random generator
 
@@ -366,6 +366,66 @@ func TestConcurrentMixed(t *testing.T) {
 
 }
 
+func TestConcurrentMixedModifyParams(t *testing.T) {
+
+	fmt.Println("---------------------------------------")
+	fmt.Println("Mixed add and remove, parameters modified concurrently")
+	fmt.Println("----------------------------------------")
+
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	var head = new(Skiplist)
+	head.InitSkiplist(0.5, 20, FAST)
+
+	var wg sync.WaitGroup
+
+	wg.Add(nRoutinesToUse)
+	fmt.Println("Spawing", nRoutinesToUse, "coroutines to insert ", dataAmount, "elements from 0 to", dataAmount)
+	fmt.Println("and spawing", nRoutinesToUse/2, "coroutines to remove elements from 0 to", dataAmount/2)
+	for index := 0; index < nRoutinesToUse; index++ {
+		if !head.Inserter(index, &wg) {
+			t.Errorf("Could not insert item %d", index)
+		}
+	}
+
+	/* ACTUAL TEST */
+
+	// change parameters concurrently
+	go head.setProb(0.1)
+	go head.setFastRandom(false)
+	go head.setMaxLevels(12)
+
+	/* ACTUAL TEST */
+
+	wg.Wait()
+
+	wg.Add(nRoutinesToUse / 2)
+	fmt.Println("Spawing", nRoutinesToUse, "coroutines to remove ", dataAmount, "elements")
+	for index := 0; index < nRoutinesToUse/2; index++ {
+		if !head.Remover(index, &wg) {
+			t.Errorf("Could not insert item %d", index)
+		}
+	}
+
+	wg.Wait()
+
+	// lockless contains doesn't matter if run on one
+	// or many coroutines
+	for index := 0; index < dataAmount/2; index++ {
+		if head.Contains((interface{}(index))) {
+			t.Errorf("%d should not be contained in Skiplist", index)
+		}
+	}
+
+	if head.nElements != evenDataAmount/2 {
+		t.Errorf("Skiplist should have %d elements but has %d", dataAmount/2, head.nElements)
+	}
+
+	fmt.Println("OK!")
+	fmt.Println("----------------------------------------")
+
+}
+
 func TestUnion(t *testing.T) {
 	fmt.Println("-------------------")
 	fmt.Println("Skiplist union test")
@@ -417,7 +477,7 @@ func TestUnion(t *testing.T) {
 
 	fmt.Println("Merging to new Skiplist...")
 
-	var merged = Union(mergedNew, head, head2)
+	var merged = mergedNew.Union(head, head2)
 
 	if merged.nElements != dataAmount+dataAmount/2 {
 		t.Errorf("Merged Skiplist should contain %d items but contains %d", dataAmount+dataAmount/2, merged.nElements)
@@ -439,7 +499,7 @@ func TestUnion(t *testing.T) {
 	// 	}
 	// }
 
-	merged = UnionSimple(mergedNew, head, head2)
+	merged = UnionSimple(head, head2)
 
 	if merged.nElements != dataAmount+dataAmount/2 {
 		t.Errorf("Merged Skiplist should contain %d items but contains %d", dataAmount+dataAmount/2, merged.nElements)
@@ -512,7 +572,7 @@ func TestIntersect(t *testing.T) {
 
 	fmt.Println("Intersecting with new probabilities...")
 
-	var intersected = Intersection(newSkiplist, head, head2)
+	var intersected = newSkiplist.Intersection(head, head2)
 
 	for index := 0; index < dataAmount; index += 2 {
 		if !intersected.Contains(interface{}(index)) {
@@ -522,7 +582,7 @@ func TestIntersect(t *testing.T) {
 	}
 
 	fmt.Println("Intersecting and keeping Skiplist structures...")
-	intersected = IntersectionSimple(newSkiplist, head, head2)
+	intersected = IntersectionSimple(head, head2)
 
 	for index := 0; index < dataAmount; index += 2 {
 		if !intersected.Contains(interface{}(index)) {
@@ -617,10 +677,8 @@ func BenchmarkUnion(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		union = Union(union, head, head1)
+		union = union.Union(head, head1)
 	}
-
-	union = Union(union, head, head1)
 
 }
 
@@ -651,7 +709,7 @@ func BenchmarkUnionSimple(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		union = UnionSimple(union, head, head1)
+		union = UnionSimple(head, head1)
 	}
 
 }
@@ -665,8 +723,8 @@ func BenchmarkIntersection(b *testing.B) {
 	var head1 = new(Skiplist)
 	head1.InitSkiplist(0.5, 30, FAST)
 
-	var union = new(Skiplist)
-	union.InitSkiplist(0.5, 30, FAST)
+	var intersection = new(Skiplist)
+	intersection.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(interface{}(index)) {
@@ -683,7 +741,7 @@ func BenchmarkIntersection(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		union = Intersection(union, head, head1)
+		intersection = intersection.Intersection(head, head1)
 	}
 
 }

@@ -1,7 +1,7 @@
 package main
 
 //Min min of two ints
-func Min(a, b int) int {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
@@ -9,7 +9,7 @@ func Min(a, b int) int {
 }
 
 //Max max of two ints
-func Max(a, b int) int {
+func max(a, b int) int {
 	if a < b {
 		return b
 	}
@@ -18,9 +18,25 @@ func Max(a, b int) int {
 
 // TurnEven if int is even return it,
 // else return next even int
-func TurnEven(a int) int {
+func turnEven(a int) int {
 	if a&1 == 1 {
 		return a + 1
 	}
 	return a
+}
+
+//MaxF max of two float64
+func maxF(a, b float64) float64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+//minF min of two float64
+func minF(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
 }

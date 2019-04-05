@@ -5,10 +5,12 @@ optimistic lazy Skiplist algorithm from the paper by Maurice Herlihy,Yossi Lev,V
 
 The implementation includes tests and the repository is connected with Travis for continuous integration.
 
+The skiplist acts as a set and supports insert,contains,remove operations in O(logn) expected time and union and intersection operations in O(n + m) expected time. 
+
 Example usage:
 ```golang
     // initialise random number generator
-        rand.Seed(time.Now().UTC().UnixNano())
+    rand.Seed(time.Now().UTC().UnixNano())
 
     // allocate skiplist struct
     head := new(Skiplist)
@@ -64,7 +66,56 @@ Example usage:
         go head.Contains(interface{}(index))
         go head.Remove(interface{}(index))
         
-	}
+    }
+
+    /* Union */
+    var other = new(Skiplist)
+    other.InitSkiplist(0.5, 30, FAST)
+    
+    for index := 0; index < 2*dataAmount; index++ {
+		if !other.Insert(interface{}(index)) {
+			// insertion failed, item already inserted
+		}
+    }
+
+    /* new skiplist struct, set parameters */
+    var union = new(Skiplist)
+	union.InitSkiplist(0.5, 30, FAST)
+    
+    /*the union,items are inserted anew according to the parameters
+    of the initialized list
+    , complexity O(n + m)  */
+    union := union.Union(head, other)
+
+    
+    /*the skiplists are directly merged level by level,
+    elements keep their former levels, no random calls.
+    faster but can lead to unbalanced skiplists.
+    New skiplist parameters set to defaults, see function
+    documentation. */
+    union := UnionSimple(head, other)
+
+    var intersection = new(Skiplist)
+	intersection.InitSkiplist(0.5, 30, FAST)
+
+    /*the intersection ,items are inserted anew according to the parameters
+    of the initialized list
+    , complexity O(n + m)  */
+    intersection := intersection.Intersection(head, other)
+
+    
+    /*the skiplists are directly merged level by level,
+    elements keep their former levels, no random calls.
+    faster but can lead to unbalanced skiplists.
+    New skiplist parameters set to defaults, see function
+    documentation. */
+    union := IntersectionSimple(head, other)
+
+
+
+
+
+    
     
 
 
