@@ -20,6 +20,34 @@ func (list *Skiplist) Len() int {
 	return list.nElements
 }
 
+/* set max levels,
+if levels > SkiplistMaxLevel, set to SkiplistMaxLevel,
+if levels <= 0, set to 1
+Threadsafe*/
+func (list *Skiplist) setMaxLevels(levels int) {
+	defer list.lock.Unlock()
+	list.lock.Lock()
+	list.maxLevels = min(max(1, levels), SkiplistMaxLevel)
+}
+
+/* set prob,
+if prob > 1, set to SkiplistMaxLevel,
+if prob < MinProb, set to MinProb
+Threadsafe*/
+func (list *Skiplist) setProb(prob float64) {
+	defer list.lock.Unlock()
+	list.lock.Lock()
+	list.prob = minF(maxF(MinProb, prob), 1.0)
+}
+
+/* set fastRandom,
+Threadsafe*/
+func (list *Skiplist) setFastRandom(isSet bool) {
+	defer list.lock.Unlock()
+	list.lock.Lock()
+	list.fastRandom = isSet
+}
+
 /*InitSkiplist :
 prob : Probability of bernoulli trials to find level of insertion.
 maxLevels: max level of insertion
@@ -401,20 +429,20 @@ func canDelete(candidate *skiplistNode, foundLevel int) bool {
 The new Skiplist parameters will define the structure of the new Skiplist,
 meaning that the top levels of each node will be generated again
 O(N),Not threadsafe */
-func Union(newSkiplist *Skiplist, skipa *Skiplist, skipb *Skiplist) *Skiplist {
+func (list *Skiplist) Union(skipa, skipb *Skiplist) *Skiplist {
 
 	// can't have less max levels than its current levels
-	newSkiplist.maxLevels = Max(newSkiplist.maxLevels, newSkiplist.nLevels)
+	list.maxLevels = max(list.maxLevels, list.nLevels)
 
 	// add head node
-	newSkiplist.head = new(skiplistNode)
-	newSkiplist.head.fullyLinked = true
+	list.head = new(skiplistNode)
+	list.head.fullyLinked = true
 
 	// reset elements
-	newSkiplist.nElements = 0
+	list.nElements = 0
 
-	union(newSkiplist, skipa, skipb, true)
-	return newSkiplist
+	union(list, skipa, skipb, true)
+	return list
 }
 
 /*UnionSimple Merge two Skiplist sets into a new Skiplist, keeping the previous two intact.
@@ -423,38 +451,50 @@ The new Skiplist levels will be the merged levels of the two skiplists.
 New levels are not generated. The # of max levels of the new Skiplist is readjusted
 to allow merge.
 
+New skiplist parameters set to defaults of:
+
+list.prob = 0.5,
+
+list.fastRandom = true,
+
+list.maxLevels = SkiplistMaxLevel
+
 
 Returns new Skiplist.
 
 O(N),Not threadsafe */
-func UnionSimple(newSkiplist, skipa, skipb *Skiplist) *Skiplist {
+func UnionSimple(skipa, skipb *Skiplist) *Skiplist {
+	list := new(Skiplist)
+	list.prob = 0.5
+	list.fastRandom = true
+	list.maxLevels = SkiplistMaxLevel
 
 	// max of two levels
-	newSkiplist.nLevels = Max(skipa.nLevels, skipb.nLevels)
+	list.nLevels = max(skipa.nLevels, skipb.nLevels)
 
 	// add head node
-	newSkiplist.head = new(skiplistNode)
-	newSkiplist.head.fullyLinked = true
+	list.head = new(skiplistNode)
+	list.head.fullyLinked = true
 
 	// readjust max levels to make union possible
-	newSkiplist.maxLevels = Max(skipa.nLevels, newSkiplist.maxLevels) // can't have less levels than its current
-	newSkiplist.maxLevels = Max(newSkiplist.maxLevels, skipb.nLevels)
+	list.maxLevels = max(skipa.nLevels, list.maxLevels) // can't have less levels than its current
+	list.maxLevels = max(list.maxLevels, skipb.nLevels)
 
 	// reset elements
-	newSkiplist.nElements = 0
+	list.nElements = 0
 
-	union(newSkiplist, skipa, skipb, false)
-	return newSkiplist
+	union(list, skipa, skipb, false)
+	return list
 
 }
 
 /* actual implementation */
-func union(merged, skipa, skipb *Skiplist, newProb bool) *Skiplist {
+func union(list, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 
 	if newProb {
-		merged.nLevels = 0
+		list.nLevels = 0
 	} else {
-		merged.nLevels = Max(skipa.nLevels, skipb.nLevels)
+		list.nLevels = max(skipa.nLevels, skipb.nLevels)
 	}
 
 	var aptr, bptr, newNode *skiplistNode
@@ -464,8 +504,8 @@ func union(merged, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 	var prevs [SkiplistMaxLevel]*skiplistNode
 
 	// add head nodes
-	for level := merged.maxLevels - 1; level >= 0; level-- {
-		prevs[level] = merged.head
+	for level := list.maxLevels - 1; level >= 0; level-- {
+		prevs[level] = list.head
 	}
 
 	// skip head nodes in both origins
@@ -524,8 +564,8 @@ func union(merged, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 			if !newProb {
 				newNode.topLevel = elementToAdd.topLevel
 			} else {
-				newNode.topLevel = coinTosses(merged.prob, merged.maxLevels, merged.fastRandom) - 1
-				merged.nLevels = Max(newNode.topLevel+1, merged.nLevels)
+				newNode.topLevel = coinTosses(list.prob, list.maxLevels, list.fastRandom) - 1
+				list.nLevels = max(newNode.topLevel+1, list.nLevels)
 			}
 
 			for level := newNode.topLevel; level >= 0; level-- {
@@ -533,13 +573,13 @@ func union(merged, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 				prevs[level] = prevs[level].next[level]
 			}
 
-			merged.nElements++
+			list.nElements++
 
 		}
 
 	}
 
-	return merged
+	return list
 
 }
 
@@ -547,45 +587,59 @@ func union(merged, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 The new Skiplist parameters will define the structure of the new Skiplist,
 meaning that the top levels of insertion of each node will be generated again
 O(N),Not threadsafe */
-func Intersection(newSkiplist, skipa, skipb *Skiplist) *Skiplist {
+func (list *Skiplist) Intersection(skipa, skipb *Skiplist) *Skiplist {
 
 	// max of two levels
-	newSkiplist.nLevels = Max(skipa.nLevels, skipb.nLevels)
+	list.nLevels = max(skipa.nLevels, skipb.nLevels)
 	// can't have less max levels than its current levels
-	newSkiplist.maxLevels = Max(newSkiplist.maxLevels, newSkiplist.nLevels)
+	list.maxLevels = max(list.maxLevels, list.nLevels)
 
 	// add head node
-	newSkiplist.head = new(skiplistNode)
-	newSkiplist.head.fullyLinked = true
+	list.head = new(skiplistNode)
+	list.head.fullyLinked = true
 
 	// reset elements
-	newSkiplist.nElements = 0
+	list.nElements = 0
 
-	intersection(newSkiplist, skipa, skipb, true)
-	return newSkiplist
+	intersection(list, skipa, skipb, true)
+	return list
 
 }
 
 /*IntersectionSimple Intersect two Skiplist sets into a new Skiplist, keeping the previous two intact.
 The new Skiplist levels will be the intersection of the other two skiplists' levels,
 new insertion levels will not be generated. (Faster than Intersect)
+
+New skiplist parameters set to defaults of:
+
+list.prob = 0.5,
+
+list.fastRandom = true,
+
+list.maxLevels = SkiplistMaxLevel
+
 Not threadsafe */
-func IntersectionSimple(newSkiplist, skipa, skipb *Skiplist) *Skiplist {
+func IntersectionSimple(skipa, skipb *Skiplist) *Skiplist {
+
+	list := new(Skiplist)
+
+	// reset parameters
+	list.prob = 0.5
+	list.fastRandom = true
+	list.maxLevels = SkiplistMaxLevel
 
 	// max of two levels
-	newSkiplist.nLevels = Max(skipa.nLevels, skipb.nLevels)
-	// can't have less max levels than its current levels
-	newSkiplist.maxLevels = Max(newSkiplist.maxLevels, newSkiplist.nLevels)
+	list.nLevels = max(skipa.nLevels, skipb.nLevels)
 
 	// add head node
-	newSkiplist.head = new(skiplistNode)
-	newSkiplist.head.fullyLinked = true
+	list.head = new(skiplistNode)
+	list.head.fullyLinked = true
 
 	// reset elements
-	newSkiplist.nElements = 0
+	list.nElements = 0
 
-	intersection(newSkiplist, skipa, skipb, false)
-	return newSkiplist
+	intersection(list, skipa, skipb, false)
+	return list
 
 }
 
@@ -599,7 +653,7 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 
 	// intersection will have at most as many levels
 	// as the shortest Skiplist
-	intersected.nLevels = Min(skipa.nLevels, skipb.nLevels)
+	intersected.nLevels = min(skipa.nLevels, skipb.nLevels)
 
 	// add head node
 	intersected.head = new(skiplistNode)
@@ -661,11 +715,11 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 			if newProb {
 				newNode.topLevel = coinTosses(intersected.prob, intersected.maxLevels, intersected.fastRandom) - 1
 			} else {
-				newNode.topLevel = Min(aptr.topLevel, bptr.topLevel)
+				newNode.topLevel = min(aptr.topLevel, bptr.topLevel)
 			}
 
 			// update new total Skiplist maximum level
-			maxLevel = Max(newNode.topLevel, maxLevel)
+			maxLevel = max(newNode.topLevel, maxLevel)
 
 			for level := newNode.topLevel; level >= 0; level-- {
 				prevs[level].next[level] = newNode

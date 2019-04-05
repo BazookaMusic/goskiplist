@@ -6,6 +6,10 @@ import "sync"
 // next pointer arrays are of constant size
 const SkiplistMaxLevel = 30
 
+//MinProb Minimum probability of bernoulli trial success
+//for random function
+const MinProb = 0.01
+
 type skiplistNode struct {
 	value       interface{}
 	next        [SkiplistMaxLevel]*skiplistNode
