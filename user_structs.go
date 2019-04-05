@@ -14,6 +14,7 @@ type mystr struct {
 // set for user struct. Returns true if a is less than b
 func Less(a, b interface{}) bool {
 	switch a.(type) {
+	// add your type here
 	case mystr:
 		a := a.(mystr)
 		b := b.(mystr)
@@ -32,6 +33,7 @@ func Less(a, b interface{}) bool {
 // set for user struct. Returns true if a equals b
 func Equals(a, b interface{}) bool {
 	switch a.(type) {
+	// add your type here
 	case mystr:
 		a := a.(mystr)
 		b := b.(mystr)
