@@ -82,7 +82,7 @@ for index := 0; index < 2*dataAmount; index++ {
 var union = new(Skiplist)
 union.InitSkiplist(0.5, 30, FAST)
 
-/*the union,items are inserted anew according to the parameters
+/*the union items are inserted anew according to the parameters
 of the initialized list
 , complexity O(n + m)  */
 union := union.Union(head, other)
@@ -98,7 +98,7 @@ union := UnionSimple(head, other)
 var intersection = new(Skiplist)
 intersection.InitSkiplist(0.5, 30, FAST)
 
-/*the intersection ,items are inserted anew according to the parameters
+/*the intersection items are inserted anew according to the parameters
 of the initialized list
 , complexity O(n + m)  */
 intersection := intersection.Intersection(head, other)
