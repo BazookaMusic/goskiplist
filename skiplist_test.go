@@ -17,13 +17,13 @@ var evenDataAmount = turnEven(dataAmount) // used for tests
 const FAST = true // fast random generator
 
 // helpers
-func evalSort(arr []interface{}) bool {
+func evalSort(arr []SkiplistItem) bool {
 	if len(arr) == 0 {
 		return true
 	}
 	prev := arr[0]
 	for index := 1; index < len(arr); index++ {
-		if Less(arr[index], prev) {
+		if arr[index].Less(prev) {
 			fmt.Println("Items out of order:", arr[index], prev)
 			return false
 		}
@@ -51,7 +51,7 @@ func debug(head *Skiplist) {
 func (head *Skiplist) Inserter(v int, wg *sync.WaitGroup) bool {
 	defer wg.Done()
 	for index := v * (dataAmount / nRoutinesToUse); index < (v+1)*(dataAmount/nRoutinesToUse); index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			return false
 		}
 	}
@@ -62,7 +62,7 @@ func (head *Skiplist) Remover(v int, wg *sync.WaitGroup) bool {
 
 	defer wg.Done()
 	for index := v * (dataAmount / nRoutinesToUse); index < (v+1)*(dataAmount/nRoutinesToUse); index++ {
-		if !head.Remove(interface{}(index)) {
+		if !head.Remove(SkiplistItem(Int(index))) {
 			return false
 		}
 	}
@@ -86,13 +86,13 @@ func TestInsert(t *testing.T) {
 
 	fmt.Println("Inserting numbers from 0 to", dataAmount-1)
 	for index := 0; index < dataAmount; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			t.Errorf("Could not insert item %d", index)
 		}
 	}
 
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -128,13 +128,13 @@ func TestRemove(t *testing.T) {
 
 	fmt.Println("Inserting numbers from 0 to", dataAmount-1)
 	for index := 0; index < dataAmount; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 
 		}
 	}
 
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -146,7 +146,7 @@ func TestRemove(t *testing.T) {
 	fmt.Println("Removing numbers from 0 to", dataAmount-1)
 	amountRemoved := 0
 	for index := 0; index < dataAmount; index++ {
-		if !head.Remove((interface{}(index))) {
+		if !head.Remove((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		} else {
 			amountRemoved++
@@ -180,15 +180,15 @@ func TestRandOperation(t *testing.T) {
 	added := 0
 	fmt.Println("Inserting", dataAmount, "random numbers")
 	for index := 0; index < dataAmount; index++ {
-		if head.Insert(interface{}(rand.Intn(dataAmount))) {
+		if head.Insert(SkiplistItem(Int(rand.Intn(dataAmount)))) {
 			added++
 		}
 	}
 
 	amountRemoved := 0
 	for index := 0; index < dataAmount; index++ {
-		if head.Contains((interface{}(index))) {
-			if !head.Remove((interface{}(index))) {
+		if head.Contains((SkiplistItem(Int(index)))) {
+			if !head.Remove((SkiplistItem(Int(index)))) {
 				t.Errorf("Number %d exists but could not be removed from Skiplist ", index)
 			}
 
@@ -244,7 +244,7 @@ func TestConcurrentInsertAndOrder(t *testing.T) {
 	// lockless contains doesn't matter if run on one
 	// or many coroutines
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -291,7 +291,7 @@ func TestConcurrentInsertRemove(t *testing.T) {
 	// lockless contains doesn't matter if run on one
 	// or many coroutines
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -352,7 +352,7 @@ func TestConcurrentMixed(t *testing.T) {
 	// lockless contains doesn't matter if run on one
 	// or many coroutines
 	for index := 0; index < dataAmount/2; index++ {
-		if head.Contains((interface{}(index))) {
+		if head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("%d should not be contained in Skiplist", index)
 		}
 	}
@@ -412,7 +412,7 @@ func TestConcurrentMixedModifyParams(t *testing.T) {
 	// lockless contains doesn't matter if run on one
 	// or many coroutines
 	for index := 0; index < dataAmount/2; index++ {
-		if head.Contains((interface{}(index))) {
+		if head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("%d should not be contained in Skiplist", index)
 		}
 	}
@@ -441,13 +441,13 @@ func TestUnion(t *testing.T) {
 
 	fmt.Println("Making first Skiplist")
 	for index := 0; index < dataAmount; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			t.Errorf("Could not insert item %d", index)
 		}
 	}
 
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -457,12 +457,12 @@ func TestUnion(t *testing.T) {
 
 	fmt.Println("Making second Skiplist")
 	for index := 0; index < 2*dataAmount; index += 2 {
-		if !head2.Insert(interface{}(index)) {
+		if !head2.Insert(SkiplistItem(Int(index))) {
 			t.Errorf("Could not insert item %d", index)
 		}
 	}
 	for index := 0; index < 2*dataAmount; index += 2 {
-		if !head2.Contains((interface{}(index))) {
+		if !head2.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -489,7 +489,7 @@ func TestUnion(t *testing.T) {
 	for _, item := range head1Slice {
 		//fmt.Println(item)
 		if !merged.Contains(item) {
-			t.Errorf("First Skiplist contains %d but not contained in merged Skiplist", item.(int))
+			t.Errorf("First Skiplist contains %d but not contained in merged Skiplist", item.(Int))
 		}
 	}
 
@@ -507,13 +507,13 @@ func TestUnion(t *testing.T) {
 
 	for _, item := range head1Slice {
 		if !merged.Contains(item) {
-			t.Errorf("First Skiplist contains %d but not contained in merged Skiplist", item.(int))
+			t.Errorf("First Skiplist contains %d but not contained in merged Skiplist", item.(Int))
 		}
 	}
 
 	for _, item := range head2Slice {
 		if !merged.Contains(item) {
-			t.Errorf("Second Skiplist contains %d but not contained in Skiplist", item.(int))
+			t.Errorf("Second Skiplist contains %d but not contained in Skiplist", item.(Int))
 		}
 	}
 
@@ -536,13 +536,13 @@ func TestIntersect(t *testing.T) {
 
 	fmt.Printf("Making first Skiplist with elements %d to %d\n", 0, dataAmount)
 	for index := 0; index < dataAmount; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			t.Errorf("Could not insert item %d", index)
 		}
 	}
 
 	for index := 0; index < dataAmount; index++ {
-		if !head.Contains((interface{}(index))) {
+		if !head.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -552,12 +552,12 @@ func TestIntersect(t *testing.T) {
 
 	fmt.Printf("Making second Skiplist with even elements %d to %d\n", 0, 2*dataAmount)
 	for index := 0; index < 2*dataAmount; index += 2 {
-		if !head2.Insert(interface{}(index)) {
+		if !head2.Insert(SkiplistItem(Int(index))) {
 			t.Errorf("Could not insert item %d", index)
 		}
 	}
 	for index := 0; index < 2*dataAmount; index += 2 {
-		if !head2.Contains((interface{}(index))) {
+		if !head2.Contains((SkiplistItem(Int(index)))) {
 			t.Errorf("Inserted number %d but not contained in Skiplist", index)
 		}
 	}
@@ -575,7 +575,7 @@ func TestIntersect(t *testing.T) {
 	var intersected = newSkiplist.Intersection(head, head2)
 
 	for index := 0; index < dataAmount; index += 2 {
-		if !intersected.Contains(interface{}(index)) {
+		if !intersected.Contains(SkiplistItem(Int(index))) {
 			t.Errorf("Number %d should be contained in Skiplist", index)
 		}
 
@@ -585,7 +585,7 @@ func TestIntersect(t *testing.T) {
 	intersected = IntersectionSimple(head, head2)
 
 	for index := 0; index < dataAmount; index += 2 {
-		if !intersected.Contains(interface{}(index)) {
+		if !intersected.Contains(SkiplistItem(Int(index))) {
 			t.Errorf("Number %d should be contained in Skiplist", index)
 		}
 
@@ -605,7 +605,7 @@ func BenchmarkInsert(b *testing.B) {
 	//var wg sync.WaitGroup
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -619,7 +619,7 @@ func BenchmarkDelete(b *testing.B) {
 	head.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -627,7 +627,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		if !head.Remove(interface{}(index)) {
+		if !head.Remove(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -641,7 +641,7 @@ func BenchmarkSearch(b *testing.B) {
 	head.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -649,7 +649,7 @@ func BenchmarkSearch(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		if !head.Contains(interface{}(index)) {
+		if !head.Contains(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -669,7 +669,7 @@ func BenchmarkUnion(b *testing.B) {
 	union.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -695,13 +695,13 @@ func BenchmarkUnionSimple(b *testing.B) {
 	union.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
 
 	for index := 0; index < b.N; index++ {
-		if !head1.Insert(interface{}(index)) {
+		if !head1.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
@@ -727,13 +727,13 @@ func BenchmarkIntersection(b *testing.B) {
 	intersection.InitSkiplist(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
-		if !head.Insert(interface{}(index)) {
+		if !head.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}
 
 	for index := b.N / 2; index < b.N; index++ {
-		if !head1.Insert(interface{}(index)) {
+		if !head1.Insert(SkiplistItem(Int(index))) {
 			b.Errorf("Could not insert item %d", index)
 		}
 	}

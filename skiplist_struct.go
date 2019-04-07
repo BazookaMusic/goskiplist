@@ -11,7 +11,7 @@ const SkiplistMaxLevel = 30
 const MinProb = 0.01
 
 type skiplistNode struct {
-	value       interface{}
+	value       SkiplistItem
 	next        [SkiplistMaxLevel]*skiplistNode
 	marked      bool
 	fullyLinked bool
@@ -26,6 +26,13 @@ type Skiplist struct {
 	nElements  int
 	prob       float64
 	maxLevels  int
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	fastRandom bool
+}
+
+/*SkiplistItem type of inserted items,
+must support Less and Equal */
+type SkiplistItem interface {
+	Less(b SkiplistItem) bool
+	Equals(b SkiplistItem) bool
 }
