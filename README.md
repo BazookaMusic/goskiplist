@@ -14,6 +14,31 @@ Example usage:
 // initialise random number generator
 rand.Seed(time.Now().UTC().UnixNano())
 
+/* items must be converted to interface values,
+    thus types must support Less,Equals methods */
+
+// Int, Float and their functions are already defined for 
+// convenience
+//Int : an integer
+type Int int
+// type must support Less(a SkiplistItem) bool and Equals(a SkiplistItem) bool
+
+// Less : Node comparison function for Int, should be
+// set for user struct. Returns true if a is less than b
+func (a Int) Less(b SkiplistItem) bool {
+	b, ok := b.(Int)
+
+	return ok && int(a) < int(b.(Int))
+}
+
+// Equals : Node comparison function for Int, should be
+// set for user struct. Returns true if a equals b
+func (a Int) Equals(b SkiplistItem) bool {
+	b, ok := b.(Int)
+
+	return ok && a == b
+}
+
 // allocate skiplist struct
 head := new(Skiplist)
 
@@ -43,30 +68,31 @@ dataAmount := 100
 // insert
 
 for index := 0; index < dataAmount; index++ {
-    if !head.Insert(interface{}(index)) {
+    /* type conversion */
+    if !head.Insert(SkiplistItem(Int(index))) {
         // insertion failed, item already inserted
     }
 }
 
 // contains
 for index := 0; index < dataAmount; index++ {
-    if !head.Contains(interface{}(index)) {
+    if !head.Contains(SkiplistItem(Int(index))) {
         // item not in skiplist
     }
 }
 
 //remove
     for index := 0; index < dataAmount; index++ {
-    if !head.Remove(interface{}(index)) {
+    if !head.Remove(SkiplistItem(Int(index))) {
         //  item not in skiplist
     }
 }
 
 /* will not corrupt the structure */
 for index := 0; index < dataAmount; index++ {
-    go head.Insert(interface{}(index))
-    go head.Contains(interface{}(index))
-    go head.Remove(interface{}(index))
+    go head.Insert(SkiplistItem(Int(index)))
+    go head.Contains(SkiplistItem(Int(index)))
+    go head.Remove(SkiplistItem(Int(index)))
     
 }
 
@@ -75,7 +101,7 @@ var other = new(Skiplist)
 other.InitSkiplist(0.5, 30, FAST)
 
 for index := 0; index < 2*dataAmount; index++ {
-    if !other.Insert(interface{}(index)) {
+    if !other.Insert(SkiplistItem(Int(index))) {
         // insertion failed, item already inserted
     }
 }

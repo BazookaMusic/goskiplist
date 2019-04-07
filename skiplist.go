@@ -7,16 +7,16 @@ import (
 /*Height get max Skiplist level */
 func (list *Skiplist) Height() int {
 	/* current max level */
-	defer list.lock.Unlock()
-	list.lock.Lock()
+	defer list.lock.RUnlock()
+	list.lock.RLock()
 	return list.nLevels
 }
 
 /*Len get number of inserted unique elements */
 func (list *Skiplist) Len() int {
 	/* current dataAmount of inserted elements */
-	defer list.lock.Unlock()
-	list.lock.Lock()
+	defer list.lock.RUnlock()
+	list.lock.RLock()
 	return list.nElements
 }
 
@@ -63,6 +63,7 @@ func (list *Skiplist) InitSkiplist(prob float64, maxLevels int, fastRandom bool)
 	if maxLevels > SkiplistMaxLevel {
 		fmt.Println("Init: Max level given more than supported dataAmount of",
 			SkiplistMaxLevel, " setting to ", SkiplistMaxLevel, "instead")
+		maxLevels = SkiplistMaxLevel
 	}
 
 	list.nLevels = 1
@@ -79,11 +80,11 @@ func (list *Skiplist) InitSkiplist(prob float64, maxLevels int, fastRandom bool)
 	list.head = newHead
 }
 
-/*ToSortedArray : Return sorted array of inserted Skiplist items */
-func (list *Skiplist) ToSortedArray() []interface{} {
+/*ToSortedArray : Return sorted array of inserted Skiplist items, not threadsafe */
+func (list *Skiplist) ToSortedArray() []SkiplistItem {
 	/* make a sorted array out of the Skiplist
 	   returns the lowest level               */
-	arr := make([]interface{}, list.nElements, list.nElements)
+	arr := make([]SkiplistItem, list.nElements, list.nElements)
 	counter := 0
 	for currentNode := list.head.next[0]; currentNode != nil; currentNode = currentNode.next[0] {
 		arr[counter] = currentNode.value
@@ -98,11 +99,11 @@ func (list *Skiplist) ToSortedArray() []interface{} {
 and return it's successor on the first level.
 Returns the element or
 -1 when not found */
-func (list *Skiplist) findNextLowest(val interface{}) (node *skiplistNode) {
+func (list *Skiplist) findNextLowest(val SkiplistItem) (node *skiplistNode) {
 	// could be modified by inserts
-	list.lock.Lock()
+	list.lock.RLock()
 	level := list.nLevels - 1
-	list.lock.Unlock()
+	list.lock.RUnlock()
 	// much faster than starting at max
 
 	pred := list.head
@@ -113,13 +114,13 @@ func (list *Skiplist) findNextLowest(val interface{}) (node *skiplistNode) {
 	for ; level >= 0; level-- {
 		// horizontally
 		curr = pred.next[level]
-		for curr != nil && Less(curr.value, val) {
+		for curr != nil && curr.value.Less(val) {
 			pred = curr
 			curr = pred.next[level]
 		}
 
 		// next of where it should be
-		if curr != nil && Equals(curr.value, val) {
+		if curr != nil && curr.value.Equals(val) {
 			break
 		}
 
@@ -133,12 +134,12 @@ return the first level where it was found and the
 next and previous elements for every level.
 Returns the first level where it was found or
 -1 when not found */
-func (list *Skiplist) Find(val interface{}, prev, next []*skiplistNode) (foundLevel int) {
+func (list *Skiplist) Find(val SkiplistItem, prev, next []*skiplistNode) (foundLevel int) {
 
 	// could be modified by inserts
-	list.lock.Lock()
+	list.lock.RLock()
 	level := list.nLevels - 1
-	list.lock.Unlock()
+	list.lock.RUnlock()
 	// much faster than starting at max
 
 	pred := list.head
@@ -149,13 +150,13 @@ func (list *Skiplist) Find(val interface{}, prev, next []*skiplistNode) (foundLe
 	for ; level >= 0; level-- {
 		// horizontally
 		curr = pred.next[level]
-		for curr != nil && Less(curr.value, val) {
+		for curr != nil && curr.value.Less(val) {
 			pred = curr
 			curr = pred.next[level]
 		}
 
 		// next of where it should be
-		if curr != nil && Equals(curr.value, val) && foundLevel == -1 {
+		if curr != nil && curr.value.Equals(val) && foundLevel == -1 {
 			foundLevel = level
 		}
 
@@ -170,11 +171,11 @@ func (list *Skiplist) Find(val interface{}, prev, next []*skiplistNode) (foundLe
 
 /*Contains : Return true if node with value val exists in Skiplist,
 else false. */
-func (list *Skiplist) Contains(val interface{}) bool {
+func (list *Skiplist) Contains(val SkiplistItem) bool {
 
-	list.lock.Lock()
+	list.lock.RLock()
 	level := list.nLevels - 1
-	list.lock.Unlock()
+	list.lock.RUnlock()
 
 	pred := list.head
 	var curr *skiplistNode
@@ -182,14 +183,14 @@ func (list *Skiplist) Contains(val interface{}) bool {
 	for ; level >= 0; level-- {
 		// horizontally
 		curr = pred.next[level]
-		for curr != nil && Less(curr.value, val) {
+		for curr != nil && curr.value.Less(val) {
 			pred = curr
 			curr = pred.next[level]
 		}
 		//found something or have to go down
 
 		// is the next element what I seek
-		if curr != nil && Equals(curr.value, val) {
+		if curr != nil && curr.value.Equals(val) {
 			node := curr
 			return node.fullyLinked && !node.marked
 		}
@@ -200,7 +201,7 @@ func (list *Skiplist) Contains(val interface{}) bool {
 
 /*Insert : Insert node with value v to Skiplist. Returns true on success,false on failure to insert.
 Thread safe. */
-func (list *Skiplist) Insert(v interface{}) bool {
+func (list *Skiplist) Insert(v SkiplistItem) bool {
 	// insert element
 
 	// highest level of insertion
@@ -320,7 +321,7 @@ func (list *Skiplist) Insert(v interface{}) bool {
 
 /*Remove : Remove node with value val from Skiplist, if ite exists. Returns true on success,
 false on not found or failure to remove. Thread safe. */
-func (list *Skiplist) Remove(val interface{}) bool {
+func (list *Skiplist) Remove(val SkiplistItem) bool {
 	/* remove node */
 
 	var nodeToDelete *skiplistNode
@@ -432,7 +433,7 @@ O(N),Not threadsafe */
 func (list *Skiplist) Union(skipa, skipb *Skiplist) *Skiplist {
 
 	// can't have less max levels than its current levels
-	list.maxLevels = max(list.maxLevels, list.nLevels)
+	list.maxLevels = max(list.maxLevels, max(skipa.maxLevels, skipb.maxLevels))
 
 	// add head node
 	list.head = new(skiplistNode)
@@ -498,7 +499,7 @@ func union(list, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 	}
 
 	var aptr, bptr, newNode *skiplistNode
-	var prevElem *interface{}
+	var prevElem *SkiplistItem
 
 	// keep last node added in each level
 	var prevs [SkiplistMaxLevel]*skiplistNode
@@ -526,10 +527,10 @@ func union(list, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 
 		/* skip same consecutive elements */
 		if prevElem != nil {
-			if aptr != nil && Equals(aptr.value, *prevElem) {
+			if aptr != nil && aptr.value.Equals(*prevElem) {
 				aptr = aptr.next[0]
 				continue
-			} else if bptr != nil && Equals(bptr.value, *prevElem) {
+			} else if bptr != nil && bptr.value.Equals(*prevElem) {
 				bptr = bptr.next[0]
 				continue
 			}
@@ -542,7 +543,7 @@ func union(list, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 		elementToAdd = nil
 
 		/* choose if element from first or second list will be added first */
-		if (aptr != nil && bptr != nil && Less(aptr.value, bptr.value)) || bptr == nil {
+		if (aptr != nil && bptr != nil && aptr.value.Less(bptr.value)) || bptr == nil {
 			// keep prev for same check
 			prevElem = &aptr.value
 			elementToAdd = aptr
@@ -663,7 +664,7 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 	intersected.nElements = 0
 
 	var aptr, bptr, newNode *skiplistNode
-	var prevElem *interface{}
+	var prevElem *SkiplistItem
 
 	// keep last node added in each level
 	var prevs [SkiplistMaxLevel]*skiplistNode
@@ -690,17 +691,17 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 
 		/* skip same consecutive elements */
 		if prevElem != nil {
-			if Equals(aptr.value, *prevElem) {
+			if aptr.value.Equals(*prevElem) {
 				aptr = aptr.next[0]
 				continue
-			} else if Equals(bptr.value, *prevElem) {
+			} else if bptr.value.Equals(*prevElem) {
 				bptr = bptr.next[0]
 				continue
 			}
 		}
 
 		/* element in both sets, add */
-		if aptr != nil && bptr != nil && Equals(aptr.value, bptr.value) {
+		if aptr != nil && bptr != nil && aptr.value.Equals(bptr.value) {
 			// keep prev for same check
 			prevElem = &aptr.value
 
@@ -732,7 +733,7 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 			// move list pointers forward
 			aptr = aptr.next[0]
 			bptr = bptr.next[0]
-		} else if Less(aptr.value, bptr.value) {
+		} else if aptr.value.Less(bptr.value) {
 			// keep prev for same check
 			prevElem = &aptr.value
 			// move second list pointer forward

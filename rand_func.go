@@ -26,16 +26,17 @@ func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
 			counter++
 		}
 
-	} else {
-		// supports probability
-		// slower
-		res := rand.Float64()
-		for res < prob {
-			res = rand.Float64()
-			counter++
-		}
+		return
 
 	}
-	return counter
+
+	// supports probability
+	// slower
+	res := rand.Float64()
+	for res < prob {
+		res = rand.Float64()
+		counter++
+	}
+	return
 
 }
