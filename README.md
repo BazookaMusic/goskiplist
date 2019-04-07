@@ -141,8 +141,5 @@ faster but can lead to unbalanced skiplists.
 New skiplist parameters set to defaults, see function
 documentation. */
 intersection := sl.IntersectionSimple(head, other)
-
-
-
 ```
 
