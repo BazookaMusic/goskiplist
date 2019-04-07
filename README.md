@@ -67,30 +67,30 @@ dataAmount := 100
 
 for index := 0; index < dataAmount; index++ {
     /* type conversion */
-    if !head.Insert(SkiplistItem(Int(index))) {
+    if !head.Insert(Int(index)) {
         // insertion failed, item already inserted
     }
 }
 
 // contains
 for index := 0; index < dataAmount; index++ {
-    if !head.Contains(SkiplistItem(Int(index))) {
+    if !head.Contains(Int(index)) {
         // item not in skiplist
     }
 }
 
 //remove
     for index := 0; index < dataAmount; index++ {
-    if !head.Remove(SkiplistItem(Int(index))) {
+    if !head.Remove(Int(index)) {
         //  item not in skiplist
     }
 }
 
 /* will not corrupt the structure */
 for index := 0; index < dataAmount; index++ {
-    go head.Insert(SkiplistItem(Int(index)))
-    go head.Contains(SkiplistItem(Int(index)))
-    go head.Remove(SkiplistItem(Int(index)))
+    go head.Insert(Int(index))
+    go head.Contains(Int(index))
+    go head.Remove(Int(index))
     
 }
 
@@ -99,7 +99,7 @@ var other = new(Skiplist)
 other.InitSkiplist(0.5, 30, FAST)
 
 for index := 0; index < 2*dataAmount; index++ {
-    if !other.Insert(SkiplistItem(Int(index))) {
+    if !other.Insert(Int(index)) {
         // insertion failed, item already inserted
     }
 }
