@@ -1,4 +1,4 @@
-package main
+package goskiplist
 
 import (
 	"math/rand"
@@ -26,7 +26,7 @@ func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
 			counter++
 		}
 
-		return
+		return counter
 
 	}
 
@@ -37,6 +37,6 @@ func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
 		res = rand.Float64()
 		counter++
 	}
-	return
+	return counter
 
 }
