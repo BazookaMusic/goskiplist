@@ -1,4 +1,4 @@
-package main
+package goskiplist
 
 import (
 	"fmt"
@@ -751,9 +751,5 @@ func intersection(intersected, skipa, skipb *Skiplist, newProb bool) *Skiplist {
 	}
 	intersected.nLevels = maxLevel + 1
 	return intersected
-
-}
-
-func main() {
 
 }

@@ -1,4 +1,4 @@
-package main
+package goskiplist
 
 // example struct setup for insertion to
 // Skiplist

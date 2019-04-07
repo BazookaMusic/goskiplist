@@ -1,4 +1,4 @@
-package main
+package goskiplist
 
 //Min min of two ints
 func min(a, b int) int {
