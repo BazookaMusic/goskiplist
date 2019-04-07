@@ -17,8 +17,8 @@ rand.Seed(time.Now().UTC().UnixNano())
 /* items must be converted to interface values,
     thus types must support Less,Equals methods */
 
-// Int, Float and their functions are already defined for 
-// convenience
+// Int and its functions are already defined for 
+// convenience. See comparison_structs.go
 //Int : an integer
 type Int int
 // type must support Less(a SkiplistItem) bool and Equals(a SkiplistItem) bool
