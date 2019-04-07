@@ -25,9 +25,6 @@ func (a mystr) Equals(b SkiplistItem) bool {
 //Int : an integer
 type Int int
 
-//Float : a float
-type Float float64
-
 // Less : Node comparison function for Int, should be
 // set for user struct. Returns true if a is less than b
 func (a Int) Less(b SkiplistItem) bool {
@@ -40,22 +37,6 @@ func (a Int) Less(b SkiplistItem) bool {
 // set for user struct. Returns true if a equals b
 func (a Int) Equals(b SkiplistItem) bool {
 	c, ok := b.(Int)
-
-	return ok && a == c
-}
-
-// Less : Node comparison function for floats, should be
-// set for user struct. Returns true if a is less than b
-func (a Float) Less(b SkiplistItem) bool {
-	c, ok := b.(Float)
-
-	return ok && a < c
-}
-
-// Equals : Node comparison function for Float, should be
-// set for user struct. Returns true if a equals b
-func (a Float) Equals(b SkiplistItem) bool {
-	c, ok := b.(Float)
 
 	return ok && a == c
 }

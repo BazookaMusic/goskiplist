@@ -745,3 +745,35 @@ func BenchmarkIntersection(b *testing.B) {
 	}
 
 }
+
+func BenchmarkIntersectionSimple(b *testing.B) {
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	var head = new(Skiplist)
+	head.InitSkiplist(0.5, 30, FAST)
+
+	var head1 = new(Skiplist)
+	head1.InitSkiplist(0.5, 30, FAST)
+
+	var intersection = new(Skiplist)
+	intersection.InitSkiplist(0.5, 30, FAST)
+
+	for index := 0; index < b.N; index++ {
+		if !head.Insert(SkiplistItem(Int(index))) {
+			b.Errorf("Could not insert item %d", index)
+		}
+	}
+
+	for index := b.N / 2; index < b.N; index++ {
+		if !head1.Insert(SkiplistItem(Int(index))) {
+			b.Errorf("Could not insert item %d", index)
+		}
+	}
+
+	b.ResetTimer()
+
+	for index := 0; index < b.N; index++ {
+		intersection = IntersectionSimple(head, head1)
+	}
+
+}

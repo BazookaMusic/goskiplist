@@ -63,6 +63,7 @@ func (list *Skiplist) InitSkiplist(prob float64, maxLevels int, fastRandom bool)
 	if maxLevels > SkiplistMaxLevel {
 		fmt.Println("Init: Max level given more than supported dataAmount of",
 			SkiplistMaxLevel, " setting to ", SkiplistMaxLevel, "instead")
+		maxLevels = SkiplistMaxLevel
 	}
 
 	list.nLevels = 1
@@ -172,7 +173,7 @@ func (list *Skiplist) Find(val SkiplistItem, prev, next []*skiplistNode) (foundL
 else false. */
 func (list *Skiplist) Contains(val SkiplistItem) bool {
 
-	list.lock.Rlock()
+	list.lock.RLock()
 	level := list.nLevels - 1
 	list.lock.RUnlock()
 
@@ -432,7 +433,7 @@ O(N),Not threadsafe */
 func (list *Skiplist) Union(skipa, skipb *Skiplist) *Skiplist {
 
 	// can't have less max levels than its current levels
-	list.maxLevels = max(list.maxLevels, list.nLevels)
+	list.maxLevels = max(list.maxLevels, max(skipa.maxLevels, skipb.maxLevels))
 
 	// add head node
 	list.head = new(skiplistNode)
