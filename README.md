@@ -9,6 +9,10 @@ The skiplist acts as a set and supports insert,contains,remove operations in O(l
 
 Example usage:
 ```golang
+
+import (
+	sl "github.com/gerrish/goskiplist"
+)
 // initialise random number generator
 rand.Seed(time.Now().UTC().UnixNano())
 
@@ -23,7 +27,7 @@ type Int int
 
 // Less : Node comparison function for Int, should be
 // set for user struct. Returns true if a is less than b
-func (a Int) Less(b SkiplistItem) bool {
+func (a Int) Less(b sl.SkiplistItem) bool {
 	b, ok := b.(Int)
 
 	return ok && int(a) < int(b.(Int))
@@ -31,14 +35,14 @@ func (a Int) Less(b SkiplistItem) bool {
 
 // Equals : Node comparison function for Int, should be
 // set for user struct. Returns true if a equals b
-func (a Int) Equals(b SkiplistItem) bool {
+func (a Int) Equals(b sl.SkiplistItem) bool {
 	b, ok := b.(Int)
 
 	return ok && a == b
 }
 
 // allocate skiplist struct
-head := new(Skiplist)
+head := new(sl.Skiplist)
 
 
 /* Initialise skiplist parameters */
@@ -95,7 +99,7 @@ for index := 0; index < dataAmount; index++ {
 }
 
 /* Union */
-var other = new(Skiplist)
+var other = new(sl.Skiplist)
 other.InitSkiplist(0.5, 30, FAST)
 
 for index := 0; index < 2*dataAmount; index++ {
@@ -105,7 +109,7 @@ for index := 0; index < 2*dataAmount; index++ {
 }
 
 /* new skiplist struct, set parameters */
-var union = new(Skiplist)
+var union = new(sl.Skiplist)
 union.InitSkiplist(0.5, 30, FAST)
 
 /*the union items are inserted anew according to the parameters
@@ -119,9 +123,9 @@ elements keep their former levels, no random calls.
 faster but can lead to unbalanced skiplists.
 New skiplist parameters set to defaults, see function
 documentation. */
-union := UnionSimple(head, other)
+union := sl.UnionSimple(head, other)
 
-var intersection = new(Skiplist)
+var intersection = new(sl.Skiplist)
 intersection.InitSkiplist(0.5, 30, FAST)
 
 /*the intersection items are inserted anew according to the parameters
@@ -136,7 +140,7 @@ Elements keep their former levels, no random calls.
 faster but can lead to unbalanced skiplists.
 New skiplist parameters set to defaults, see function
 documentation. */
-intersection := IntersectionSimple(head, other)
+intersection := sl.IntersectionSimple(head, other)
 
 
 
