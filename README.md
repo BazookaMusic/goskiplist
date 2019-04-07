@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/gerrish/goskiplist.svg?branch=master)](https://travis-ci.org/gerrish/goskiplist)
 
 This is a thread safe implementation of a generic skiplist in Go. It is a direct implementation of the simple 
-optimistic lazy Skiplist algorithm from the paper by Maurice Herlihy,Yossi Lev,Victor Luchangco and Nir Shavit.
+optimistic lazy Skiplist algorithm from the paper by Maurice Herlihy,Yossi Lev of Brown University & Sun Microsystems Laboratories,Victor Luchangco of Sun Microsystems Laboratories  and Nir Shavit of Tel-Aviv University & Sun Microsystems Laboratories.
 
 [Link to paper](http://people.csail.mit.edu/shanir/publications/LazySkipList.pdf "the paper")
 
