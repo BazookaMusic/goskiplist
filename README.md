@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/gerrish/goskiplist)](https://goreportcard.com/report/github.com/gerrish/goskiplist)
 [![Build Status](https://travis-ci.org/gerrish/goskiplist.svg?branch=master)](https://travis-ci.org/gerrish/goskiplist)
 
 This is a thread safe implementation of a generic skiplist in Go. It is a direct implementation of the simple 
