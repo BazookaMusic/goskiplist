@@ -43,8 +43,7 @@ func (a Int) Equals(b sl.SkiplistItem) bool {
 	return ok && a == b
 }
 
-// allocate skiplist struct
-head := new(sl.Skiplist)
+
 
 
 /* Initialise skiplist parameters */
@@ -58,13 +57,17 @@ head := new(sl.Skiplist)
 // SkiplistMaxLevel is the max amount allowed by the
 // implementation (compile constant)
 
-// the third parameter, if set to true,
+// the third parameter, if set to FAST,
 // enables an optimised algorithm to
 // generate the random levels but
 // with a set probability of 0.5
+// If set to VARIABLE, allows variable probability
+// on random level generation, but is slower
 
 
-head.InitSkiplist(0.5, SkiplistMaxLevel, false)
+head := sl.New(0.5, 30, FAST)
+
+
 
 /* thread-safe insert,remove, contains */
 dataAmount := 100
@@ -101,8 +104,8 @@ for index := 0; index < dataAmount; index++ {
 }
 
 /* Union */
-var other = new(sl.Skiplist)
-other.InitSkiplist(0.5, 30, FAST)
+var other = sl.New(0.5, 30, FAST)
+
 
 for index := 0; index < 2*dataAmount; index++ {
     if !other.Insert(Int(index)) {
@@ -111,8 +114,8 @@ for index := 0; index < 2*dataAmount; index++ {
 }
 
 /* new skiplist struct, set parameters */
-var union = new(sl.Skiplist)
-union.InitSkiplist(0.5, 30, FAST)
+var union = sl.New(0.5, 30, FAST)
+
 
 /*the union items are inserted anew according to the parameters
 of the initialized list
@@ -127,8 +130,8 @@ New skiplist parameters set to defaults, see function
 documentation. */
 union := sl.UnionSimple(head, other)
 
-var intersection = new(sl.Skiplist)
-intersection.InitSkiplist(0.5, 30, FAST)
+var intersection = sl.New(0.5, 30, FAST)
+
 
 /*the intersection items are inserted anew according to the parameters
 of the initialized list

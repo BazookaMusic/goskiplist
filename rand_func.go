@@ -6,9 +6,11 @@ import (
 
 const mask = ((1 << SkiplistMaxLevel) - 1)
 
-// FastImplementation = true, one call to rand, 0.5 probability
-// FastImplementation = false, consecutive calls to rand, variable probability
-const FastImplementation = true
+// FAST = true, one call to rand, 0.5 probability
+const FAST = true
+
+//VARIABLE consecutive calls to rand, variable probability
+const VARIABLE = false
 
 func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
 

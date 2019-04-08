@@ -14,8 +14,6 @@ var nRoutinesToUse = min(dataAmount, nRoutinesAmount) // no reason to spawn more
 
 var evenDataAmount = turnEven(dataAmount) // used for tests
 
-const FAST = true // fast random generator
-
 // helpers
 func evalSort(arr []SkiplistItem) bool {
 	if len(arr) == 0 {
@@ -79,8 +77,7 @@ func TestInsert(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -121,8 +118,7 @@ func TestRemove(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -172,8 +168,7 @@ func TestRandOperation(t *testing.T) {
 	fmt.Println("------------------------------------")
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	//var wg sync.WaitGroup
 
@@ -226,8 +221,7 @@ func TestConcurrentInsertAndOrder(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	var wg sync.WaitGroup
 
@@ -273,8 +267,7 @@ func TestConcurrentInsertRemove(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	var wg sync.WaitGroup
 
@@ -323,8 +316,7 @@ func TestConcurrentMixed(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	var wg sync.WaitGroup
 
@@ -374,8 +366,7 @@ func TestConcurrentMixedModifyParams(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 20, FAST)
+	var head = New(0.5, 30, FAST)
 
 	var wg sync.WaitGroup
 
@@ -433,11 +424,9 @@ func TestUnion(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var mergedNew = new(Skiplist)
-	mergedNew.InitSkiplist(0.5, 30, FAST)
+	var mergedNew = New(0.5, 30, FAST)
 
 	fmt.Println("Making first Skiplist")
 	for index := 0; index < dataAmount; index++ {
@@ -452,8 +441,7 @@ func TestUnion(t *testing.T) {
 		}
 	}
 
-	var head2 = new(Skiplist)
-	head2.InitSkiplist(0.5, 30, FAST)
+	var head2 = New(0.5, 30, FAST)
 
 	fmt.Println("Making second Skiplist")
 	for index := 0; index < 2*dataAmount; index += 2 {
@@ -528,11 +516,9 @@ func TestIntersect(t *testing.T) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var newSkiplist = new(Skiplist)
-	newSkiplist.InitSkiplist(0.5, 30, FAST)
+	var newSkiplist = New(0.5, 30, FAST)
 
 	fmt.Printf("Making first Skiplist with elements %d to %d\n", 0, dataAmount)
 	for index := 0; index < dataAmount; index++ {
@@ -547,8 +533,7 @@ func TestIntersect(t *testing.T) {
 		}
 	}
 
-	var head2 = new(Skiplist)
-	head2.InitSkiplist(0.5, 30, FAST)
+	var head2 = New(0.5, 30, FAST)
 
 	fmt.Printf("Making second Skiplist with even elements %d to %d\n", 0, 2*dataAmount)
 	for index := 0; index < 2*dataAmount; index += 2 {
@@ -598,8 +583,8 @@ func TestIntersect(t *testing.T) {
 func BenchmarkInsert(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
+
 	b.ResetTimer()
 
 	//var wg sync.WaitGroup
@@ -615,8 +600,7 @@ func BenchmarkInsert(b *testing.B) {
 func BenchmarkDelete(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -637,8 +621,7 @@ func BenchmarkDelete(b *testing.B) {
 func BenchmarkSearch(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -659,14 +642,11 @@ func BenchmarkSearch(b *testing.B) {
 func BenchmarkUnion(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var head1 = new(Skiplist)
-	head1.InitSkiplist(0.5, 30, FAST)
+	var head1 = New(0.5, 30, FAST)
 
-	var union = new(Skiplist)
-	union.InitSkiplist(0.5, 30, FAST)
+	var union = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -685,14 +665,9 @@ func BenchmarkUnion(b *testing.B) {
 func BenchmarkUnionSimple(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var head1 = new(Skiplist)
-	head1.InitSkiplist(0.5, 30, FAST)
-
-	var union = new(Skiplist)
-	union.InitSkiplist(0.5, 30, FAST)
+	var head1 = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -707,9 +682,8 @@ func BenchmarkUnionSimple(b *testing.B) {
 	}
 
 	b.ResetTimer()
-
 	for index := 0; index < b.N; index++ {
-		union = UnionSimple(head, head1)
+		UnionSimple(head, head1)
 	}
 
 }
@@ -717,14 +691,11 @@ func BenchmarkUnionSimple(b *testing.B) {
 func BenchmarkIntersection(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var head1 = new(Skiplist)
-	head1.InitSkiplist(0.5, 30, FAST)
+	var head1 = New(0.5, 30, FAST)
 
-	var intersection = new(Skiplist)
-	intersection.InitSkiplist(0.5, 30, FAST)
+	var intersection = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -749,14 +720,9 @@ func BenchmarkIntersection(b *testing.B) {
 func BenchmarkIntersectionSimple(b *testing.B) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var head = new(Skiplist)
-	head.InitSkiplist(0.5, 30, FAST)
+	var head = New(0.5, 30, FAST)
 
-	var head1 = new(Skiplist)
-	head1.InitSkiplist(0.5, 30, FAST)
-
-	var intersection = new(Skiplist)
-	intersection.InitSkiplist(0.5, 30, FAST)
+	var head1 = New(0.5, 30, FAST)
 
 	for index := 0; index < b.N; index++ {
 		if !head.Insert(Int(index)) {
@@ -773,7 +739,7 @@ func BenchmarkIntersectionSimple(b *testing.B) {
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		intersection = IntersectionSimple(head, head1)
+		IntersectionSimple(head, head1)
 	}
 
 }
