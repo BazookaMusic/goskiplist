@@ -48,12 +48,14 @@ func (list *Skiplist) setFastRandom(isSet bool) {
 	list.fastRandom = isSet
 }
 
-/*InitSkiplist :
+/*New : Create new skiplist
 prob : Probability of bernoulli trials to find level of insertion.
 maxLevels: max level of insertion
 fastRandom: true -> use optimised random level generation with set probability 0.5 (fast),
 false -> use bernoulli trials with consecutive calls to random (slower but variable probability) */
-func (list *Skiplist) InitSkiplist(prob float64, maxLevels int, fastRandom bool) {
+func New(prob float64, maxLevels int, fastRandom bool) *Skiplist {
+
+	list := new(Skiplist)
 
 	if prob < 0 {
 		prob = 0.5
@@ -78,6 +80,8 @@ func (list *Skiplist) InitSkiplist(prob float64, maxLevels int, fastRandom bool)
 	list.nElements = 0
 
 	list.head = newHead
+
+	return list
 }
 
 /*ToSortedArray : Return sorted array of inserted Skiplist items, not threadsafe */
