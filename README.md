@@ -8,7 +8,7 @@ optimistic lazy Skiplist algorithm from the paper by Maurice Herlihy,Yossi Lev o
 
 The implementation includes tests and the repository is connected with Travis for continuous integration.
 
-The skiplist acts as a set and supports insert,contains,remove operations in O(logn) expected time and union and intersection operations in O(n + m) expected time. 
+The skiplist acts as a set or a map and supports insert,contains,remove and get (to function as a map) operations in O(logn) expected time and union and intersection operations in O(n + m) expected time. 
 
 Example usage:
 ```golang
