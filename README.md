@@ -93,7 +93,7 @@ func main() {
 	}
 
 	// get 
-	item := head.Get(Int(dataAmount/3)) // get item with item.Equals(15) == true,
+	item := head.Get(Int(dataAmount/3)) // get item with item.Equals(dataAmount/3) == true,
 							 // useful to use set as a map
 							 // nil if not contained
 	
