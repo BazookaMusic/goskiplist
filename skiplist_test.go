@@ -162,6 +162,40 @@ func TestRemove(t *testing.T) {
 
 }
 
+func TestGet(t *testing.T) {
+	fmt.Println("---------------------------------------")
+	fmt.Println("Sequential integer add and get")
+	fmt.Println("----------------------------------------")
+
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	var head = New(0.5, 30, FAST)
+
+	//var wg sync.WaitGroup
+
+	fmt.Println("Inserting numbers from 0 to", dataAmount-1)
+	for index := 0; index < dataAmount; index++ {
+		if !head.Insert(Int(index)) {
+			t.Errorf("Could not insert item %d", index)
+		}
+	}
+
+	for index := 0; index < dataAmount; index++ {
+		if head.Get((Int(index))) == nil {
+			t.Errorf("Inserted number %d but not contained in Skiplist", index)
+		}
+	}
+
+	invalidItem := head.Get(Int(dataAmount + 2))
+	if invalidItem != nil {
+		t.Errorf("Key %d should not match any values but matches %d", dataAmount+2, invalidItem)
+
+	}
+
+	fmt.Println("OK!")
+	fmt.Println("----------------------------------------")
+}
+
 func TestRandOperation(t *testing.T) {
 	fmt.Println("------------------------------------")
 	fmt.Println("Random integer add, check and remove")

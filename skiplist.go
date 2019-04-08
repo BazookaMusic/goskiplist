@@ -203,6 +203,34 @@ func (list *Skiplist) Contains(val SkiplistItem) bool {
 	return false
 }
 
+/*Get : Get the actual item associated with value val */
+func (list *Skiplist) Get(val SkiplistItem) SkiplistItem {
+
+	list.lock.RLock()
+	level := list.nLevels - 1
+	list.lock.RUnlock()
+
+	pred := list.head
+	var curr *skiplistNode
+	// vertically
+	for ; level >= 0; level-- {
+		// horizontally
+		curr = pred.next[level]
+		for curr != nil && curr.value.Less(val) {
+			pred = curr
+			curr = pred.next[level]
+		}
+		//found something or have to go down
+
+		// is the next element what I seek
+		if curr != nil && curr.value.Equals(val) && curr.fullyLinked && !curr.marked {
+			return curr.value
+		}
+	}
+	// not found
+	return nil
+}
+
 /*Insert : Insert node with value v to Skiplist. Returns true on success,false on failure to insert.
 Thread safe. */
 func (list *Skiplist) Insert(v SkiplistItem) bool {
