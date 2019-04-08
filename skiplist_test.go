@@ -14,8 +14,6 @@ var nRoutinesToUse = min(dataAmount, nRoutinesAmount) // no reason to spawn more
 
 var evenDataAmount = turnEven(dataAmount) // used for tests
 
-const FAST = true // fast random generator
-
 // helpers
 func evalSort(arr []SkiplistItem) bool {
 	if len(arr) == 0 {
