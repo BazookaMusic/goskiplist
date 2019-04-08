@@ -151,5 +151,5 @@ intersection := sl.IntersectionSimple(head, other)
 ```
 
 Some performance results on an i5 3570K at 4.5Ghz and 16GB of ram at 1600mhz:
-![Benchmark results](https://imgur.com/QyWd4ji)
+![Benchmark results](https://i.imgur.com/QyWd4ji.png)
 
