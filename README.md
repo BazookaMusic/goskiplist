@@ -23,8 +23,10 @@ rand.Seed(time.Now().UTC().UnixNano())
 
 // Int and its functions are already defined for 
 // convenience. See comparison_structs.go
+
 //Int : an integer
 type Int int
+
 // type must support Less(a SkiplistItem) bool and Equals(a SkiplistItem) bool
 
 // Less : Node comparison function for Int, should be
