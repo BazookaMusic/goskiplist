@@ -6,10 +6,14 @@ import (
 
 const mask = ((1 << SkiplistMaxLevel) - 1)
 
-// FAST = true, one call to rand, 0.5 probability
+//FAST used to initialise skiplist with
+// fast random level generation algorithm but
+// set probability of 0.5
 const FAST = true
 
-//VARIABLE consecutive calls to rand, variable probability
+//VARIABLE  used to initialise skiplist with
+//slower random level generation algorithm but
+//with variable probability
 const VARIABLE = false
 
 func coinTosses(prob float64, maxLevels int, fast bool) (counter int) {
